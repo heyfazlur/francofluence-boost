@@ -1,5 +1,11 @@
 
-export const speakingPrompts = [
+export interface SpeakingPrompt {
+  id: number;
+  title: string;
+  text: string;
+}
+
+export const speakingPrompts: SpeakingPrompt[] = [
   {
     id: 1,
     title: "Personal Introduction",
@@ -25,4 +31,4 @@ export const speakingPrompts = [
     title: "Weekend Activities",
     text: "Que faites-vous généralement pendant le week-end?",
   }
-] as const;
+];

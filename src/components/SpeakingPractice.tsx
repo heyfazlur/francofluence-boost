@@ -7,7 +7,7 @@ import { WaveformVisualizer } from "./WaveformVisualizer";
 import { SpeakingFeedback } from "./SpeakingFeedback";
 import { useToast } from "@/hooks/use-toast";
 import { useRecorder } from "@/hooks/use-recorder";
-import { speakingPrompts } from "@/data/speakingPrompts";
+import { speakingPrompts, SpeakingPrompt } from "@/data/speakingPrompts";
 
 interface SpeakingAnalysis {
   pronunciationScore: number;
@@ -22,7 +22,7 @@ interface SpeakingAnalysis {
 }
 
 export function SpeakingPractice() {
-  const [currentPrompt, setCurrentPrompt] = useState(speakingPrompts[0]);
+  const [currentPrompt, setCurrentPrompt] = useState<SpeakingPrompt>(speakingPrompts[0]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [feedback, setFeedback] = useState<SpeakingAnalysis | null>(null);
   const { toast } = useToast();
