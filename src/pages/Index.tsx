@@ -1,45 +1,19 @@
 
-import { BookOpen, Newspaper, Mic, Headphones, PenTool, LogOut } from "lucide-react";
+import { BookOpen, Newspaper, Mic, Headphones, PenTool } from "lucide-react";
 import { DashboardCard } from "@/components/DashboardCard";
 import { ProgressBar } from "@/components/ProgressBar";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
 
 const Index = () => {
   const navigate = useNavigate();
-  const { toast } = useToast();
-
-  const handleLogout = async () => {
-    try {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
-    }
-  };
 
   return (
     <div className="min-h-screen bg-french-beige">
       <header className="bg-french-blue text-white py-6">
-        <div className="container flex justify-between items-center">
-          <div>
-            <h1 className="text-4xl font-bold mb-2 animate-fade-in">FranceFluence</h1>
-            <p className="text-lg opacity-90 animate-slide-up">Your path to TEF/TCF success</p>
-          </div>
-          <Button
-            variant="ghost"
-            className="text-white hover:text-white/80"
-            onClick={handleLogout}
-          >
-            <LogOut className="mr-2 h-4 w-4" />
-            Logout
-          </Button>
+        <div className="container">
+          <h1 className="text-4xl font-bold mb-2 animate-fade-in">FranceFluence</h1>
+          <p className="text-lg opacity-90 animate-slide-up">Your path to TEF/TCF success</p>
         </div>
       </header>
 
