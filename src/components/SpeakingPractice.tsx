@@ -5,7 +5,7 @@ import { Card, CardContent } from "./ui/card";
 import { Mic, Square, Loader2 } from "lucide-react";
 import { WaveformVisualizer } from "./WaveformVisualizer";
 import { SpeakingFeedback } from "./SpeakingFeedback";
-import { useToast } from "./ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { useRecorder } from "@/hooks/use-recorder";
 import { speakingPrompts } from "@/data/speakingPrompts";
 
