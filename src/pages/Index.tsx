@@ -3,8 +3,11 @@ import { BookOpen, Newspaper, Mic, Headphones, PenTool } from "lucide-react";
 import { DashboardCard } from "@/components/DashboardCard";
 import { ProgressBar } from "@/components/ProgressBar";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 const Index = () => {
+  const navigate = useNavigate();
+
   return (
     <div className="min-h-screen bg-french-beige">
       <header className="bg-french-blue text-white py-6">
@@ -30,12 +33,23 @@ const Index = () => {
             </div>
           </DashboardCard>
 
-          {/* News Updates */}
+          {/* Start Learning Card */}
           <DashboardCard
-            title="Latest Updates"
-            description="Canadian Immigration News"
+            title="Start Learning"
+            description="Begin your practice session"
             className="lg:col-span-2"
           >
+            <Button
+              size="lg"
+              className="w-full"
+              onClick={() => navigate("/learn")}
+            >
+              Launch Learning Modules
+            </Button>
+          </DashboardCard>
+
+          {/* News Updates */}
+          <DashboardCard title="Latest Updates" description="Canadian Immigration News">
             <div className="space-y-4">
               <Button variant="ghost" className="w-full justify-start text-left">
                 <Newspaper className="mr-2 h-4 w-4" />
