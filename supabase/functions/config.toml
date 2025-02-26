@@ -1,0 +1,17 @@
+
+project_id = "jgshmykmloemktajpjdl"
+
+[global]
+headers = { Access-Control-Allow-Origin = "*" }
+
+[[functions]]
+name = "text-to-speech"
+verify_jwt = false
+
+[[functions]]
+name = "analyze-writing"
+verify_jwt = false
+
+[[functions]]
+name = "analyze-speech"
+verify_jwt = false

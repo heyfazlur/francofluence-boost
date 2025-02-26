@@ -9,6 +9,7 @@ import { WritingPrompt } from "./WritingPrompt";
 import { WritingEditor } from "./WritingEditor";
 import { FeedbackDisplay } from "./FeedbackDisplay";
 import { useToast } from "./ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const WRITING_PROMPTS = [
   {
@@ -16,7 +17,16 @@ const WRITING_PROMPTS = [
     description: "Write about your ideal city to live and work in. Consider aspects like transportation, culture, and quality of life.",
     wordLimit: 150,
   },
-  // Add more prompts here
+  {
+    prompt: "Comment la technologie a-t-elle changé notre façon de travailler?",
+    description: "Discuss how technology has changed the way we work. Consider both positive and negative impacts.",
+    wordLimit: 200,
+  },
+  {
+    prompt: "Quels sont les avantages et les inconvénients de vivre dans une grande ville?",
+    description: "Discuss the advantages and disadvantages of living in a big city.",
+    wordLimit: 180,
+  }
 ];
 
 export function LessonView() {
@@ -31,32 +41,24 @@ export function LessonView() {
   const handleSubmitWriting = async (text: string) => {
     setIsLoading(true);
     try {
-      // TODO: Replace with actual API call to OpenAI
-      // Simulated feedback for now
-      const mockFeedback = {
-        errors: [
-          {
-            original: "Je suis allé au le parc",
-            correction: "Je suis allé au parc",
-            explanation: "When using 'à' with 'le', it contracts to 'au'.",
-          },
-        ],
-        suggestions: [
-          "Try using more complex sentence structures",
-          "Include more descriptive adjectives",
-          "Consider using the subjunctive mood where appropriate",
-        ],
-        score: {
-          grammar: 85,
-          vocabulary: 75,
-          clarity: 90,
-          total: 83,
+      const { data, error } = await supabase.functions.invoke('analyze-writing', {
+        body: { 
+          text,
+          prompt: currentPrompt.prompt
         },
-      };
+      });
 
-      setFeedback(mockFeedback);
+      if (error) throw error;
+
+      setFeedback(data);
       setProgress(Math.min(progress + 25, 100));
+      
+      // Play audio feedback using text-to-speech
+      const feedbackText = `Votre score total est de ${data.score.total} sur 100. Voici quelques suggestions pour améliorer votre texte.`;
+      await playText(feedbackText);
+
     } catch (error) {
+      console.error('Error analyzing writing:', error);
       toast({
         title: "Error",
         description: "Failed to analyze your writing. Please try again.",
@@ -67,11 +69,36 @@ export function LessonView() {
     }
   };
 
-  const handleRegenerateFeedback = () => {
+  const handleRegenerateFeedback = async () => {
     toast({
       description: "Regenerating feedback...",
     });
-    // TODO: Implement feedback regeneration
+    if (feedback?.originalText) {
+      await handleSubmitWriting(feedback.originalText);
+    }
+  };
+
+  const playText = async (text: string) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('text-to-speech', {
+        body: { text },
+      });
+
+      if (error) throw error;
+
+      // Create and play audio from base64
+      const audioContent = data.audioContent;
+      const audio = new Audio(`data:audio/mp3;base64,${audioContent}`);
+      await audio.play();
+
+    } catch (error) {
+      console.error('Error playing text:', error);
+      toast({
+        title: "Error",
+        description: "Failed to play audio. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   if (!started) {

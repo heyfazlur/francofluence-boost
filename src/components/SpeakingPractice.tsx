@@ -8,6 +8,7 @@ import { SpeakingFeedback } from "./SpeakingFeedback";
 import { useToast } from "@/hooks/use-toast";
 import { useRecorder } from "@/hooks/use-recorder";
 import { speakingPrompts, SpeakingPrompt } from "@/data/speakingPrompts";
+import { supabase } from "@/integrations/supabase/client";
 
 interface SpeakingAnalysis {
   pronunciationScore: number;
@@ -36,22 +37,34 @@ export function SpeakingPractice() {
     onRecordingComplete: async (audioBlob) => {
       try {
         setIsAnalyzing(true);
-        const formData = new FormData();
-        formData.append("audio", audioBlob);
-        formData.append("prompt", currentPrompt.text);
+        
+        // Convert blob to base64
+        const reader = new FileReader();
+        reader.readAsDataURL(audioBlob);
+        reader.onloadend = async () => {
+          const base64Audio = reader.result?.toString().split(',')[1];
+          
+          if (!base64Audio) {
+            throw new Error('Failed to convert audio to base64');
+          }
 
-        const response = await fetch("/api/analyze-speech", {
-          method: "POST",
-          body: formData,
-        });
+          const { data, error } = await supabase.functions.invoke('analyze-speech', {
+            body: {
+              audio: base64Audio,
+              prompt: currentPrompt.text
+            }
+          });
 
-        if (!response.ok) {
-          throw new Error("Failed to analyze speech");
-        }
+          if (error) throw error;
 
-        const analysis = await response.json();
-        setFeedback(analysis);
+          setFeedback(data);
+
+          // Play feedback using text-to-speech
+          const feedbackText = `Votre score total est de ${data.overallScore} sur 100. Voici quelques suggestions pour améliorer votre prononciation.`;
+          await playFeedback(feedbackText);
+        };
       } catch (error) {
+        console.error('Error analyzing speech:', error);
         toast({
           title: "Error",
           description: "Failed to analyze your speech. Please try again.",
@@ -62,6 +75,21 @@ export function SpeakingPractice() {
       }
     },
   });
+
+  const playFeedback = async (text: string) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('text-to-speech', {
+        body: { text },
+      });
+
+      if (error) throw error;
+
+      const audio = new Audio(`data:audio/mp3;base64,${data.audioContent}`);
+      await audio.play();
+    } catch (error) {
+      console.error('Error playing feedback:', error);
+    }
+  };
 
   const handleNextPrompt = () => {
     const currentIndex = speakingPrompts.findIndex(
