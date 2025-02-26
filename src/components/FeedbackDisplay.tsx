@@ -1,6 +1,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Check, X, Lightbulb } from "lucide-react";
+import { Button } from "./ui/button"; // Add this import
 
 interface Feedback {
   errors: Array<{
