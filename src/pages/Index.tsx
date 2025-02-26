@@ -1,12 +1,54 @@
 
-import { BookOpen, Newspaper, Mic, Headphones, PenTool } from "lucide-react";
+import { BookOpen, Newspaper, Mic, Headphones, PenTool, Volume2 } from "lucide-react";
 import { DashboardCard } from "@/components/DashboardCard";
 import { ProgressBar } from "@/components/ProgressBar";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 const Index = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  const playText = async (text: string) => {
+    try {
+      setIsGenerating(true);
+      const { data, error } = await supabase.functions.invoke('text-to-speech', {
+        body: { text },
+      });
+
+      if (error) throw error;
+
+      // Create and play audio from base64
+      const audioContent = data.audioContent;
+      const audio = new Audio(`data:audio/mp3;base64,${audioContent}`);
+      await audio.play();
+
+    } catch (error) {
+      console.error('Error playing text:', error);
+      toast({
+        title: "Error",
+        description: "Failed to play audio. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const newsUpdates = [
+    {
+      text: "Les changements du format d'examen TEF pour 2024",
+      translation: "Updates to TEF exam format for 2024"
+    },
+    {
+      text: "Nouvelles voies d'immigration annoncées",
+      translation: "New immigration pathways announced"
+    }
+  ];
 
   return (
     <div className="min-h-screen bg-french-beige">
@@ -51,14 +93,30 @@ const Index = () => {
           {/* News Updates */}
           <DashboardCard title="Latest Updates" description="Canadian Immigration News">
             <div className="space-y-4">
-              <Button variant="ghost" className="w-full justify-start text-left">
-                <Newspaper className="mr-2 h-4 w-4" />
-                Updates to TEF exam format for 2024
-              </Button>
-              <Button variant="ghost" className="w-full justify-start text-left">
-                <Newspaper className="mr-2 h-4 w-4" />
-                New immigration pathways announced
-              </Button>
+              {newsUpdates.map((update, index) => (
+                <div key={index} className="space-y-1">
+                  <Button 
+                    variant="ghost" 
+                    className="w-full justify-start text-left flex items-start"
+                  >
+                    <Newspaper className="mr-2 h-4 w-4 mt-1 flex-shrink-0" />
+                    <div>
+                      <p className="font-medium">{update.text}</p>
+                      <p className="text-sm text-muted-foreground">{update.translation}</p>
+                    </div>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="ml-6"
+                    onClick={() => playText(update.text)}
+                    disabled={isGenerating}
+                  >
+                    <Volume2 className="mr-2 h-4 w-4" />
+                    Listen
+                  </Button>
+                </div>
+              ))}
             </div>
           </DashboardCard>
 
